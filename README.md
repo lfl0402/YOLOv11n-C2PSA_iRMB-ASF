@@ -4,6 +4,9 @@
 
 **桑叶病虫害检测 · 轻量化改进 · 树莓派边缘部署**
 
+**作者：梁凤玲、韦日坤**（河池学院 人工智能与制造学院）  
+**论文：《基于改进YOLOv11n的桑叶病虫害检测方法研究》**
+
 [简体中文](README.md) | [English](README.en.md)
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
@@ -24,7 +27,7 @@
 - **ASF 风格 Neck**：用 `Zoom_cat` 做跨尺度特征对齐，用 `ScalSeq` 做跨尺度序列建模，再用 `Add` 聚合，替代部分标准 `Concat`/上采样路径。
 - **边缘部署**：PyTorch → TorchScript → pnnx → NCNN，树莓派 4B 上 **438 ms/帧（约 2.3 FPS）**，并提供 Gradio 网页端与 Android WebView 客户端。
 
-数据集：6 类桑叶病虫害，2023 张图像、2941 个标注实例，按约 7:3 划分（1378 训练 / 645 验证）。
+数据集：6 类桑叶病虫害。论文报告 2140 张图像、2962 个标注实例；本仓库当前 `dataset0224` 目录实际为 2023 张图像、2941 个实例（1378 训练 / 645 验证，验证集 1003 个实例）。
 
 ## 主要结果
 
@@ -38,30 +41,50 @@
 - 指标取 `best.pt` 对应轮次（`exp34`，第 226 轮，早停于 276）。
 - 小目标“尺蠖”的 mAP50 达到 **95.2%**。
 
+### 与主流轻量模型对比（论文表 4）
+
+| 模型 | P | R | mAP50 | mAP50-95 | 参数量 | 推理时间 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| YOLOv5 | 86.6 | 73.3 | 82.2 | 52.9 | 2.18 M | 0.9 ms |
+| YOLOv6 | 85.9 | 70.1 | 78.0 | 51.2 | 4.15 M | 0.7 ms |
+| YOLOv8n | 88.4 | 72.0 | 81.4 | 54.7 | 2.69 M | 0.8 ms |
+| YOLOv9s | 84.3 | 71.9 | 81.9 | 55.1 | 6.19 M | 1.9 ms |
+| YOLOv10n | 82.9 | 70.5 | 79.2 | 57.9 | 2.69 M | 1.0 ms |
+| YOLOv11n 基线 | 87.5 | 76.0 | 83.5 | 55.8 | 2.58 M | 0.9 ms |
+| **YOLOv11n-C2PSA-iRMB-ASF（本文）** | **86.8** | **79.2** | **84.5** | **57.4** | **2.60 M** | **1.1 ms** |
+
+> 推理时间为 RTX 3080、Batch Size=1 的纯模型推理，不含前后处理；参数量按论文表 4。本仓库 `weights/best.pt` 实测参数量为 2.98M，见下方“口径说明”。
+
+<details>
+<summary>逐类别验证集指标（论文表 3）</summary>
+
+| 类别 | 图像数 | 实例数 | P | R | mAP50 | mAP50-95 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| All | 645 | 1003 | 86.8 | 79.2 | 84.5 | 57.4 |
+| 炭疽病 | 259 | 338 | 88.0 | 76.0 | 84.7 | 62.7 |
+| 健康叶片 | 214 | 357 | 85.5 | 58.0 | 70.2 | 54.1 |
+| 尺蠖 | 50 | 54 | 92.3 | 94.4 | 95.2 | 74.3 |
+| 青枯病 | 69 | 138 | 76.8 | 76.1 | 80.1 | 42.7 |
+| 黄斑叶甲 | 51 | 52 | 90.0 | 92.3 | 94.8 | 60.3 |
+| 柳蓝叶甲 | 54 | 64 | 88.2 | 78.1 | 81.9 | 50.2 |
+
+</details>
+
 | 训练曲线 | PR 曲线 |
 | --- | --- |
 | <img src="results/exp34/results.png" width="480"> | <img src="results/exp34/PR_curve.png" width="480"> |
 
-| 输入示例 | 树莓派端检测结果 |
-| --- | --- |
-| <img src="assets/samples/47.jpg" width="380"> | <img src="deploy/out_pi/47.jpg" width="380"> |
+<img src="assets/val_predictions.jpg" width="900">
+
+> 验证集预测结果（模型输出，conf=0.25）。
 
 更多曲线、混淆矩阵和对比实验 PR 曲线见 [`results/`](results/README.md)。
 
 ## 网络结构
 
-```mermaid
-flowchart LR
-    IN["Input<br/>640×640×3"] --> BB["Backbone<br/>Conv / C3k2 / SPPF"]
-    BB --> F["多尺度特征<br/>P3 / P4 / P5"]
-    F --> C2["C2PSA-iRMB<br/>iRMB 双分支"]
-    C2 --> N["ASF 风格 Neck"]
-    F --> N
-    N --> Z["Zoom_cat<br/>跨尺度对齐"]
-    Z --> S["ScalSeq<br/>序列建模"]
-    S --> A["Add<br/>特征聚合"]
-    A --> H["Detect Head<br/>P3 / P4 / P5"]
-```
+<img src="assets/architecture.png" width="760">
+
+> 图：YOLOv11n-C2PSA-iRMB-ASF 网络结构（论文图 2）。Backbone 末端使用 C2PSA-iRMB，Neck 使用 TFE / SSFF / Add 完成跨尺度融合。
 
 核心改动文件：
 
@@ -186,6 +209,7 @@ chmod +x webapp.sh
 ├── app.py                       # Gradio PC 网页端
 ├── weights/best.pt              # 最终权重（6 MB）
 ├── results/                     # 指标、曲线、消融/对比表
+├── assets/                      # 架构图、检测效果、社交预览
 ├── dataset/                     # 数据配置模板（不含图像）
 ├── deploy/                      # 树莓派 NCNN + Web + C++
 ├── android_app/                 # Android WebView 客户端源码
@@ -209,9 +233,17 @@ chmod +x webapp.sh
 ## 口径说明（投稿/答辩前请核对）
 
 - **参数量**：论文表 2 中最终模型写作 2.60 M；本仓库按 `weights/best.pt` 实测为 **2.98 M / 7.83 GFLOPs**，差异主要来自 ASF 分支的 `ScalSeq`/`Add` 结构。README 与 `results/` 使用实测值。
-- **数据量**：论文表 1 写作 2140 张 / 2275 个实例；当前 `dataset0224` 实际为 **2023 张 / 2941 个实例**（1378 训练 + 645 验证）。README 与 CSV 使用实际计数，建议投稿前统一口径。
+- **数据量**：论文表 1 写作 2140 张 / 2962 个实例；当前 `dataset0224` 实际为 **2023 张 / 2941 个实例**（1378 训练 + 645 验证）。README 与 CSV 使用实际计数，建议投稿前统一口径。
 - **指标轮次**：所有表格取 `best.pt` 对应轮次，而不是最后一轮；`exp34` 最佳轮次是 226，早停于 276。
 - **原始汇总表**：项目根目录的 `all_experiments_metrics.csv` 把 `mAP50-95` 列误当成了 `mAP50`（所以 exp34 显示 57.43）；[`results/all_runs.csv`](results/all_runs.csv) 已按 `results.csv` 重新计算。
+
+## 论文与作者
+
+- 论文：《基于改进YOLOv11n的桑叶病虫害检测方法研究》
+- 作者：梁凤玲、韦日坤（河池学院 人工智能与制造学院）
+- 论文稿：[`docs/paper.docx`](docs/paper.docx)
+
+> 如果论文还在审稿、暂不希望公开，请删除 `docs/paper.docx` 或将仓库设为 Private。
 
 ## 许可证
 
@@ -226,7 +258,7 @@ chmod +x webapp.sh
 ```bibtex
 @misc{liang2026yolov11n,
   title  = {YOLOv11n-C2PSA-iRMB-ASF: Lightweight Mulberry Pest and Disease Detection with Edge Deployment},
-  author = {Liang, Fengling and Wu, Shenglan},
+  author = {Liang, Fengling and Wei, Rikun},
   year   = {2026},
   url    = {https://github.com/lfl0402/YOLOv11n-C2PSA_iRMB-ASF}
 }

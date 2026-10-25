@@ -4,6 +4,9 @@
 
 **Lightweight Mulberry Pest & Disease Detection with Raspberry Pi Deployment**
 
+**Authors: Fengling Liang, Rikun Wei (Hechi University)**  
+**Paper: Improved YOLOv11n for Mulberry Pest and Disease Detection**
+
 [简体中文](README.md) | [English](README.en.md)
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
@@ -24,7 +27,9 @@ Two structural changes are introduced:
 1. **C2PSA-iRMB** — the PSABlock inside C2PSA is replaced by an iRMB dual-branch block (depthwise convolution + multi-head self-attention) to improve fine-grained feature extraction for small targets.
 2. **ASF-style neck** — `Zoom_cat` aligns features across scales, `ScalSeq` models cross-scale sequences, and `Add` aggregates the result.
 
-Dataset: 2023 images / 2941 instances, 6 classes, split 1378 train / 645 val.
+<img src="assets/architecture.png" width="760">
+
+Dataset: 6 classes. The paper reports 2140 images / 2962 instances; the released data directory contains 2023 images / 2941 instances (1378 train / 645 val).
 
 ## Results
 
@@ -68,7 +73,7 @@ chmod +x webapp.sh
 ./webapp.sh start
 ```
 
-See [`deploy/README.md`](deploy/README.md) for systemd, C++ inference and model export. The Android WebView client is in [`android_app/`](android_app/README.md).
+Full ablation and mainstream-model comparison tables are in the [Chinese README](README.md). See [`deploy/README.md`](deploy/README.md) for systemd, C++ inference and model export. The Android WebView client is in [`android_app/`](android_app/README.md).
 
 ## Repository layout
 
@@ -99,7 +104,7 @@ The repository contains modified Ultralytics YOLO source and is distributed unde
 ```bibtex
 @misc{liang2026yolov11n,
   title  = {YOLOv11n-C2PSA-iRMB-ASF: Lightweight Mulberry Pest and Disease Detection with Edge Deployment},
-  author = {Liang, Fengling and Wu, Shenglan},
+  author = {Liang, Fengling and Wei, Rikun},
   year   = {2026},
   url    = {https://github.com/lfl0402/YOLOv11n-C2PSA_iRMB-ASF}
 }

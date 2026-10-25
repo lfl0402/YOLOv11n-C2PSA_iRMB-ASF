@@ -8,8 +8,8 @@ type: software
 authors:
   - family-names: Liang
     given-names: Fengling
-  - family-names: Wu
-    given-names: Shenglan
+  - family-names: Wei
+    given-names: Rikun
 repository-code: "https://github.com/lfl0402/YOLOv11n-C2PSA_iRMB-ASF"
 keywords:
   - YOLOv11

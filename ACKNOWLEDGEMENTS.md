@@ -36,7 +36,7 @@
 ```bibtex
 @misc{liang2026yolov11n,
   title  = {YOLOv11n-C2PSA-iRMB-ASF: Lightweight Mulberry Pest and Disease Detection with Edge Deployment},
-  author = {Liang, Fengling and Wu, Shenglan},
+  author = {Liang, Fengling and Wei, Rikun},
   year   = {2026},
   url    = {https://github.com/lfl0402/YOLOv11n-C2PSA_iRMB-ASF}
 }

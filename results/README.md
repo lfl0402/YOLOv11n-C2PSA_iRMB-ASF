@@ -8,6 +8,8 @@
 | --- | --- |
 | `ablation.csv` | 论文表 2 的消融实验（基线 / +C2PSA-iRMB / +C2PSA-iRMB+ASF） |
 | `per_class.csv` | 论文表 3 的验证集各类别指标 |
+| `paper_ablation.csv` | 论文表 2 的消融实验原始数值 |
+| `mainstream_comparison.csv` | 论文表 4 的主流轻量模型对比 |
 | `supplementary_comparison.csv` | 其他改进模块的横向对比（补充材料） |
 | `all_runs.csv` | 全部有效训练 run 的最佳轮次指标 |
 | `dataset_distribution.csv` | 数据集划分与类别实例数 |
