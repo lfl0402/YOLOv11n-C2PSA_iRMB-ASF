@@ -42,6 +42,7 @@ build/
 
 # Deploy artifacts
 deploy/_verify_out/
+deploy/runtime/
 deploy/out_pi_app.jpg
 deploy/venv/
 deploy/*.log

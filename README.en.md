@@ -69,11 +69,13 @@ ssh pi@raspberrypi.local
 cd ~/mulberry
 python3 -m venv venv
 ./venv/bin/pip install -r requirements-pi.txt
-chmod +x webapp.sh
-./webapp.sh start
+
+sudo cp systemd/*.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now mulberry mulberry-daemon
 ```
 
-Full ablation and mainstream-model comparison tables are in the [Chinese README](README.md). See [`deploy/README.md`](deploy/README.md) for systemd, C++ inference and model export. The Android WebView client is in [`android_app/`](android_app/README.md).
+Full ablation and mainstream-model comparison tables are in the [Chinese README](README.md). The 24/7 daemon writes `runtime/latest.jpg`, `status.json` and daily CSV logs; adjust `User`/paths in `deploy/systemd` if your Pi user is not `lfl`. See [`deploy/README.md`](deploy/README.md) for details. The Android WebView client is in [`android_app/`](android_app/README.md).
 
 ## Repository layout
 

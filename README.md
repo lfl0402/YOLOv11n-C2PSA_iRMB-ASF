@@ -25,7 +25,7 @@
 
 - **C2PSA-iRMB**：用 iRMB 的双分支（深度可分离卷积 + MHSA）替换 C2PSA 内部的 PSABlock，增强单尺度小目标的细粒度特征提取。
 - **ASF 风格 Neck**：用 `Zoom_cat` 做跨尺度特征对齐，用 `ScalSeq` 做跨尺度序列建模，再用 `Add` 聚合，替代部分标准 `Concat`/上采样路径。
-- **边缘部署**：PyTorch → TorchScript → pnnx → NCNN，树莓派 4B 上 **438 ms/帧（约 2.3 FPS）**，并提供 Gradio 网页端与 Android WebView 客户端。
+- **边缘部署**：PyTorch → TorchScript → pnnx → NCNN，树莓派 4B 上 **438 ms/帧（约 2.3 FPS）**；后台 daemon 常驻检测，并提供 Gradio 网页端与 Android WebView 客户端。
 
 数据集：6 类桑叶病虫害。论文报告 2140 张图像、2962 个标注实例；本仓库当前 `dataset0224` 目录实际为 2023 张图像、2941 个实例（1378 训练 / 645 验证，验证集 1003 个实例）。
 
@@ -187,11 +187,13 @@ ssh pi@raspberrypi.local
 cd ~/mulberry
 python3 -m venv venv
 ./venv/bin/pip install -r requirements-pi.txt
-chmod +x webapp.sh
-./webapp.sh start
+
+sudo cp systemd/*.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now mulberry mulberry-daemon
 ```
 
-访问 `http://<树莓派IP>:7860`。完整步骤、systemd 自启、C++ 版本和模型导出见 [`deploy/README.md`](deploy/README.md)。
+访问 `http://<树莓派IP>:7860`。`deploy/systemd` 里的 `User`/`WorkingDirectory` 默认是 `lfl`/`/home/lfl/mulberry`，用户名不同先改；后台 `pi_daemon.py` 持续采集/推理，网页只读 `/dev/shm/mulberry/latest.jpg`，没有 USB 摄像头时自动演示模式。完整步骤、C++ 版本和模型导出见 [`deploy/README.md`](deploy/README.md)。
 
 ### 6. Android 客户端
 
@@ -211,7 +213,7 @@ Android 客户端是 WebView 壳，APK 可直接下载：[Releases v1.0.0](https
 ├── results/                     # 指标、曲线、消融/对比表
 ├── assets/                      # 架构图、检测效果、社交预览
 ├── dataset/                     # 数据配置模板（不含图像）
-├── deploy/                      # 树莓派 NCNN + Web + C++
+├── deploy/                      # 树莓派 NCNN + 24/7 daemon + Web + C++
 ├── android_app/                 # Android WebView 客户端源码
 ├── tools/                       # 统计/绘图脚本
 └── docs/paper.docx              # 论文稿

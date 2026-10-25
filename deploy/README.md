@@ -19,8 +19,10 @@
 
 ```text
 deploy/
-├── pi_app.py                 # Gradio 网页服务（NCNN 推理）
-├── webapp.sh                 # start/stop/restart/status/log
+├── pi_app.py                 # Gradio 网页（只读后台最新帧 + 单张/批量检测）
+├── pi_daemon.py              # 24/7 后台采集/推理 daemon
+├── systemd/                  # mulberry.service + mulberry-daemon.service
+├── webapp.sh                 # 手动 start/stop/restart/status/log
 ├── requirements-pi.txt
 ├── model/                    # NCNN param/bin + TorchScript（已转换）
 ├── images/                   # 无摄像头时的演示图（47/48/49.jpg）
@@ -67,46 +69,69 @@ python3 -m venv venv
 
 如果 `ncnn` 的 pip 轮子在你的系统上不可用，按 NCNN 官方文档源码编译 Python 绑定；版本要与生成模型的 pnnx 版本匹配。
 
-## 3. 启动
+## 3. 启动（推荐 systemd，24/7）
+
+`deploy/systemd/` 里有两个服务：
+
+| 服务 | 作用 |
+| --- | --- |
+| `mulberry.service` | Gradio 网页，端口 7860 |
+| `mulberry-daemon.service` | 后台 24/7 检测（摄像头 → NCNN → runtime/） |
+
+安装并开机自启：
 
 ```bash
-chmod +x webapp.sh
-./webapp.sh start
-./webapp.sh status
-./webapp.sh log
-./webapp.sh stop
+sudo cp deploy/systemd/*.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now mulberry mulberry-daemon
+sudo systemctl status mulberry mulberry-daemon --no-pager
 ```
+
+> 服务里的 `User=lfl`、`/home/lfl/mulberry` 是按本机写的；用户名/路径不同时先改 `deploy/systemd/*.service`。
 
 访问：
 
-- 树莓派本机：`http://127.0.0.1:7860`
+- 本机：`http://127.0.0.1:7860`
 - 局域网电脑/手机：`http://<树莓派IP>:7860`
 - mDNS：`http://raspberrypi.local:7860`
 
-手机浏览器菜单选择“添加到主屏幕”，即可像 App 一样使用。没有 USB 摄像头时，实时监控页会自动循环播放 `images/` 中的演示图。
+手机浏览器“添加到主屏幕”即可像 App 一样使用。
 
-### 开机自启（可选）
+### 24/7 后台检测
+
+`pi_daemon.py` 常驻运行，自己打开摄像头并推理；网页只读取最新帧，所以多个浏览器不会各跑一遍模型。
+
+运行时文件：
+
+| 文件 | 内容 |
+| --- | --- |
+| `/dev/shm/mulberry/latest.jpg` | 最新标注图（内存盘，避免写 SD 卡） |
+| `/dev/shm/mulberry/status.json` | 时间、FPS、目标数、类别 |
+| `/dev/shm/mulberry/control.json` | 网页上的视频源/置信度/IoU |
+| `~/mulberry/runtime/detections-YYYYMMDD.csv` | 每个检测框一行，最多每 5 秒写一次，保留 7 天 |
+
+> `latest/status/control` 放在 `/dev/shm`，重启后丢失但 daemon 会重建；CSV 日志在磁盘。
+
+摄像头：
+
+- USB 摄像头接到 Pi，出现 `/dev/video0` 后 15 秒内自动接管；
+- 没有摄像头时循环播放 `images/` 演示图，状态里会显示“演示模式”；
+- CSI 排线摄像头（Pi Camera）当前代码不直接支持，需要 `libcamera`/`picamera2` 适配。
+
+查看状态/日志：
 
 ```bash
-sudo tee /etc/systemd/system/mulberry.service >/dev/null <<'EOF'
-[Unit]
-Description=Mulberry pest detection web app
-After=network.target
+journalctl -u mulberry-daemon -f
+cat ~/mulberry/runtime/status.json
+ls -l ~/mulberry/runtime/
+```
 
-[Service]
-Type=simple
-User=pi
-WorkingDirectory=/home/pi/mulberry
-ExecStart=/home/pi/mulberry/venv/bin/python /home/pi/mulberry/pi_app.py --port 7860
-Restart=always
+### 手动启动（调试）
 
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo systemctl daemon-reload
-sudo systemctl enable --now mulberry
-sudo systemctl status mulberry
+```bash
+chmod +x webapp.sh
+./webapp.sh start                  # 只启动网页
+./venv/bin/python pi_daemon.py     # 另开终端启动后台检测
 ```
 
 ## 4. 重新导出模型（PC 端）

@@ -16,6 +16,7 @@
 """
 import argparse
 import glob
+import json
 import os
 import sys
 import time
@@ -30,9 +31,19 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.environ.get("MULBERRY_MODEL_DIR", os.path.join(ROOT, "model"))
+if not os.path.exists(os.path.join(MODEL_DIR, "yolov11_mulberry.torchscript.ncnn.param")):
+    MODEL_DIR = ROOT  # Pi 上模型与 pi_app.py 放在同一目录时的兼容路径
 PARAM = os.path.join(MODEL_DIR, "yolov11_mulberry.torchscript.ncnn.param")
 BIN = os.path.join(MODEL_DIR, "yolov11_mulberry.torchscript.ncnn.bin")
 SIZE = 640
+RUNTIME_DIR = "/dev/shm/mulberry" if os.path.isdir("/dev/shm") else os.path.join(ROOT, "runtime")
+LATEST_JPG = os.path.join(RUNTIME_DIR, "latest.jpg")
+STATUS_JSON = os.path.join(RUNTIME_DIR, "status.json")
+CONTROL_JSON = os.path.join(RUNTIME_DIR, "control.json")
+try:
+    os.makedirs(RUNTIME_DIR, exist_ok=True)
+except Exception:
+    pass
 
 NAMES = ["Anthracnose", "Healthy", "Inchworm", "Bacterial Wilt",
          "Yellow Melyrid Leaf Beetle", "Willow Blue Leaf Beetle"]
@@ -249,6 +260,43 @@ def monitor_frame(source, conf, iou, running):
     return ann, f"**{tag}** · 本帧检出 {len(boxes)} 个目标" + (f" · 约 {fps:.1f} FPS" if fps else "")
 
 
+def monitor_latest(source, conf, iou, running):
+    """网页只读后台 daemon 的最新帧, 不在每个客户端里重复跑推理。"""
+    if not running:
+        return None, "⏸ 已暂停显示(后台 daemon 仍在检测)"
+
+    # 把页面上的阈值/视频源写给 daemon
+    try:
+        ctrl = {"source": source, "conf": float(conf), "iou": float(iou), "ts": time.time()}
+        tmp = CONTROL_JSON + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(ctrl, f, ensure_ascii=False)
+        os.replace(tmp, CONTROL_JSON)
+    except Exception:
+        pass
+
+    status = None
+    try:
+        with open(STATUS_JSON, encoding="utf-8") as f:
+            status = json.load(f)
+    except Exception:
+        pass
+
+    img = None
+    if os.path.exists(LATEST_JPG) and status and time.time() - status.get("ts", 0) < 10:
+        try:
+            img = Image.open(LATEST_JPG).convert("RGB")
+        except Exception:
+            img = None
+    if img is None:
+        return None, "⏳ 后台 daemon 启动中…(确认 mulberry-daemon 服务在运行)"
+
+    tag = "USB 摄像头" if status.get("camera") else "演示模式(未检测到摄像头)"
+    classes = status.get("classes") or {}
+    cls_txt = "、".join(f"{k} {v}" for k, v in classes.items()) if classes else "无目标"
+    return img, f"**{tag}** · {status.get('fps', 0):.1f} FPS · 本帧 {status.get('count', 0)} 个目标:{cls_txt}"
+
+
 # ---------------- 界面主题与样式 ----------------
 
 # 农业绿主题: 统一主色、圆角与层次, 让默认的框架观感更像一个"设计过的系统"
@@ -290,6 +338,7 @@ HEADER_HTML = """
     <span class="tag">验证集 mAP50 84.5%</span>
     <span class="tag">6 类病虫害</span>
     <span class="tag">单帧约 0.6 s</span>
+    <span class="tag">24/7 后台检测</span>
   </div>
 </div>
 """
@@ -345,19 +394,19 @@ def build_ui():
                     src = gr.Dropdown(choices=SRC_CHOICES, value=SRC_CHOICES[0], label="视频源")
                     mconf = gr.Slider(0.05, 0.95, value=0.25, step=0.05, label="置信度阈值")
                     miou = gr.Slider(0.10, 0.90, value=0.45, step=0.05, label="NMS IoU 阈值")
-                    run = gr.Checkbox(value=False, label="开始监控")
+                    run = gr.Checkbox(value=True, label="显示实时画面(后台持续检测)")
                     gr.Markdown(
                         "**说明**\n"
-                        "- 插上 USB 摄像头后选「自动检测摄像头」即为实时画面\n"
-                        "- 当前未接摄像头, 会自动使用演示模式(循环播放验证集图片)\n"
-                        "- 树莓派 4B 单帧推理约 0.6 s, 因此画面刷新约 1~2 FPS, 属正常\n"
+                        "- 后台 daemon 常驻采集/推理, 此页只读取最新画面\n"
+                        "- USB 摄像头接树莓派; 未检测到摄像头时自动演示模式\n"
+                        "- 画面约 2 FPS, 检测日志在 `runtime/detections-日期.csv`\n"
                         "- 手机浏览器菜单 →「添加到主屏幕」, 即可像 App 一样使用"
                     )
                 with gr.Column(scale=2):
                     live = gr.Image(label="实时画面(含检测框)", height=420)
                     mstat = gr.Markdown("等待开始…")
             timer = gr.Timer(0.5)
-            timer.tick(monitor_frame, [src, mconf, miou, run], [live, mstat])
+            timer.tick(monitor_latest, [src, mconf, miou, run], [live, mstat])
 
         with gr.Tab("单张检测"):
             with gr.Row():
@@ -395,6 +444,10 @@ def build_ui():
                 "- 推理引擎:NCNN(源码编译,与模型转换用的 pnnx 版本配套)\n"
                 "- 模型:FP32 640×640,无 FP16/INT8 加速(该 CPU 无相应指令)\n"
                 "- 实测:438 ms/帧(约 2.3 FPS),与 PC 端检测结果逐项一致\n\n"
+                "## 24/7 后台检测\n"
+                "- `mulberry-daemon` 常驻采集/推理, 网页只读最新帧\n"
+                "- 状态: `sudo systemctl status mulberry-daemon`\n"
+                "- 日志: `~/mulberry/runtime/detections-YYYYMMDD.csv`\n\n"
                 "## 类别对照\n" + "\n".join(f"- **{k}** —— {v}" for k, v in CN.items())
             )
     return demo

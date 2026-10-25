@@ -1,0 +1,18 @@
+# 把 lfl 换成你的树莓派用户名
+[Unit]
+Description=Mulberry 24/7 detection daemon
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=lfl
+WorkingDirectory=/home/lfl/mulberry
+ExecStart=/home/lfl/mulberry/venv/bin/python /home/lfl/mulberry/pi_daemon.py
+Restart=always
+RestartSec=5
+Nice=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

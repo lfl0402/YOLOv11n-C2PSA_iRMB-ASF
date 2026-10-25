@@ -1,0 +1,17 @@
+# 把 lfl 换成你的树莓派用户名
+[Unit]
+Description=Mulberry pest detection web app
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=lfl
+WorkingDirectory=/home/lfl/mulberry
+ExecStart=/home/lfl/mulberry/venv/bin/python /home/lfl/mulberry/pi_app.py --port 7860
+Restart=always
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
