@@ -1,0 +1,12 @@
+path: ../datasets/mulberry
+train: train/images
+val: valid/images
+
+nc: 6
+names:
+  - Anthracnose
+  - Healthy
+  - Inchworm
+  - Bacterial Wilt
+  - Yellow Melyrid Leaf Beetle
+  - Willow Blue Leaf Beetle

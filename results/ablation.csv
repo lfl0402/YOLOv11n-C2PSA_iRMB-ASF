@@ -1,0 +1,4 @@
+﻿model,experiment,config,precision,recall,mAP50,mAP50-95,params_M,gflops
+YOLOv11n baseline,exp4,yolo11.yaml,87.63,76.04,83.59,55.87,2.591,6.45
+YOLOv11n + C2PSA-iRMB,exp16,yolo11-C2PSA-iRMB.yaml,86.68,77.24,84.14,56.97,2.607,6.46
+YOLOv11n + C2PSA-iRMB + ASF,exp34,MY/yolo11-C2PSA-iRMB-ASFYOLO-1.yaml,86.82,79.16,84.5,57.43,2.981,7.83

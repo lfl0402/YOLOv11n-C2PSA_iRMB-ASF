@@ -1,0 +1,22 @@
+// 说明: 本机无法访问 maven.google.com, 但 dl.google.com 可用,
+// 因此仓库统一指向 Google Maven 在 dl.google.com 下的等价路径(内容相同),
+// 并保留阿里云镜像作为备用。不要改用 google(), 否则会解析失败。
+pluginManagement {
+    repositories {
+        maven { url 'https://dl.google.com/dl/android/maven2' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        maven { url 'https://dl.google.com/dl/android/maven2' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        mavenCentral()
+    }
+}
+
+rootProject.name = "MulberryDetect"
+include ':app'

@@ -1,0 +1,4 @@
+﻿split,images,instances,Anthracnose,Healthy,Inchworm,Bacterial_Wilt,Yellow_Melyrid_Leaf_Beetle,Willow_Blue_Leaf_Beetle
+train,1378,1938,671,497,229,281,127,133
+valid,645,1003,338,357,54,138,52,64
+total,2023,2941,1009,854,283,419,179,197

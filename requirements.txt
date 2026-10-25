@@ -1,0 +1,28 @@
+# Core runtime for training / validation / PC inference
+# Python 3.9-3.12 recommended. Install the PyTorch build that matches your CUDA driver first.
+torch>=2.0
+torchvision>=0.15
+numpy<2.0
+opencv-python>=4.8
+pillow>=10.0
+pyyaml>=6.0
+requests>=2.31
+scipy>=1.10
+matplotlib>=3.7
+pandas>=2.0
+seaborn>=0.13
+tqdm>=4.66
+psutil>=5.9
+
+# Custom modules used by C2PSA-iRMB / comparison YAMLs
+timm>=0.9.12
+einops>=0.7.0
+PyWavelets>=1.4
+
+# PC web UI (Gradio)
+gradio>=5.0
+
+# Optional: export / deployment helpers
+onnx>=1.15
+onnxslim>=0.1.34
+paramiko>=3.4

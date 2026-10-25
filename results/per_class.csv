@@ -1,0 +1,8 @@
+﻿class,images,instances,precision,recall,mAP50,mAP50-95
+All,645,1003,86.8,79.2,84.5,57.4
+Anthracnose,259,338,88.0,76.0,84.7,62.7
+Healthy,214,357,85.5,58.0,70.2,54.1
+Inchworm,50,54,92.3,94.4,95.2,74.3
+Bacterial Wilt,69,138,76.8,76.1,80.1,42.7
+Yellow Melyrid Leaf Beetle,51,52,90.0,92.3,94.8,60.3
+Willow Blue Leaf Beetle,54,64,88.2,78.1,81.9,50.2

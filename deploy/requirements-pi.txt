@@ -1,0 +1,5 @@
+# Raspberry Pi 4B runtime (NCNN, no PyTorch)
+numpy<2.0
+pillow>=10.0
+ncnn>=1.0.20240410
+gradio>=5.0

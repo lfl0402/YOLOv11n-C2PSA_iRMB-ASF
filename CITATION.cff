@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this project, please cite the paper and the repository."
+title: "YOLOv11n-C2PSA-iRMB-ASF: Lightweight Mulberry Pest and Disease Detection with Edge Deployment"
+version: 1.0.0
+date-released: 2026-10-25
+license: AGPL-3.0
+type: software
+authors:
+  - family-names: Liang
+    given-names: Fengling
+  - family-names: Wu
+    given-names: Shenglan
+repository-code: "https://github.com/lfl0402/YOLOv11n-C2PSA_iRMB-ASF"
+keywords:
+  - YOLOv11
+  - object detection
+  - mulberry pest detection
+  - C2PSA
+  - iRMB
+  - ASF-YOLO
+  - Raspberry Pi
+  - NCNN
