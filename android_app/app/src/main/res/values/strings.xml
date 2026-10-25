@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">桑叶病虫害检测</string>
-    <string name="hint_server">请输入树莓派地址, 例如 http://raspberrypi.local:7860</string>
+    <string name="hint_server">请输入树莓派地址, 例如 http://172.20.10.4:7860</string>
     <string name="btn_connect">连接</string>
     <string name="set_server">设置服务器地址</string>
     <string name="reload">重新加载</string>

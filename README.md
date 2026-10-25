@@ -195,7 +195,7 @@ chmod +x webapp.sh
 
 ### 6. Android 客户端
 
-用 Android Studio 打开 [`android_app/`](android_app/README.md)，修改 `MainActivity.java` 中的服务器地址后构建。默认地址为 `http://raspberrypi.local:7860`。
+Android 客户端是 WebView 壳，APK 可直接下载：[Releases v1.0.0](https://github.com/lfl0402/YOLOv11n-C2PSA_iRMB-ASF/releases/tag/v1.0.0)。手机与树莓派连同一局域网，首次启动输入 `http://172.20.10.4:7860`；源码和构建说明见 [`android_app/`](android_app/README.md)。
 
 ## 仓库结构
 

@@ -33,7 +33,7 @@ import android.widget.Toast;
  */
 public class MainActivity extends Activity {
 
-    private static final String DEFAULT_URL = "http://raspberrypi.local:7860";
+    private static final String DEFAULT_URL = "http://172.20.10.4:7860";
 
     private WebView web;
     private LinearLayout setupView;
