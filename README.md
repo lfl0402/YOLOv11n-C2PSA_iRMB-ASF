@@ -53,7 +53,7 @@
 | YOLOv11n 基线 | 87.5 | 76.0 | 83.5 | 55.8 | 2.58 M | 0.9 ms |
 | **YOLOv11n-C2PSA-iRMB-ASF（本文）** | **86.8** | **79.2** | **84.5** | **57.4** | **2.60 M** | **1.1 ms** |
 
-> 推理时间为 RTX 3080、Batch Size=1 的纯模型推理，不含前后处理；参数量按论文表 4。本仓库 `weights/best.pt` 实测参数量为 2.98M，见下方“口径说明”。
+> 推理时间为 RTX 3080、Batch Size=1 的纯模型推理，不含前后处理；参数量按论文表 4。本仓库 `weights/best.pt` 实测参数量为 2.98M，见 [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md)。
 
 <details>
 <summary>逐类别验证集指标（论文表 3）</summary>
@@ -230,20 +230,15 @@ chmod +x webapp.sh
 
 如果你确实需要完整训练输出或数据集，请通过仓库主页联系作者。
 
-## 口径说明（投稿/答辩前请核对）
+## 复现说明
 
-- **参数量**：论文表 2 中最终模型写作 2.60 M；本仓库按 `weights/best.pt` 实测为 **2.98 M / 7.83 GFLOPs**，差异主要来自 ASF 分支的 `ScalSeq`/`Add` 结构。README 与 `results/` 使用实测值。
-- **数据量**：论文表 1 写作 2140 张 / 2962 个实例；当前 `dataset0224` 实际为 **2023 张 / 2941 个实例**（1378 训练 + 645 验证）。README 与 CSV 使用实际计数，建议投稿前统一口径。
-- **指标轮次**：所有表格取 `best.pt` 对应轮次，而不是最后一轮；`exp34` 最佳轮次是 226，早停于 276。
-- **原始汇总表**：项目根目录的 `all_experiments_metrics.csv` 把 `mAP50-95` 列误当成了 `mAP50`（所以 exp34 显示 57.43）；[`results/all_runs.csv`](results/all_runs.csv) 已按 `results.csv` 重新计算。
+论文与开源版本在参数量、数据集计数上的统计口径差异，以及原始汇总表的列名问题，见 [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md)。
 
 ## 论文与作者
 
 - 论文：《基于改进YOLOv11n的桑叶病虫害检测方法研究》
 - 作者：梁凤玲、韦日坤（河池学院 人工智能与制造学院）
 - 论文稿：[`docs/paper.docx`](docs/paper.docx)
-
-> 如果论文还在审稿、暂不希望公开，请删除 `docs/paper.docx` 或将仓库设为 Private。
 
 ## 许可证
 
