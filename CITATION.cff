@@ -11,6 +11,19 @@ authors:
   - family-names: Wei
     given-names: Rikun
 repository-code: "https://github.com/lfl0402/YOLOv11n-C2PSA_iRMB-ASF"
+preferred-citation:
+  type: article
+  title: "基于改进YOLO11n的桑叶病虫害检测方法研究"
+  authors:
+    - name: "梁凤玲"
+    - name: "韦日坤"
+  journal: "物联网技术"
+  year: 2026
+  volume: 16
+  issue: 19
+  doi: "10.16667/j.issn.2095-1302.2026.19.008"
+  url: "https://doi.org/10.16667/j.issn.2095-1302.2026.19.008"
+
 keywords:
   - YOLOv11
   - object detection

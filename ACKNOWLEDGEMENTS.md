@@ -34,6 +34,16 @@
 如果本仓库对你的研究有帮助，请引用论文与 Ultralytics：
 
 ```bibtex
+@article{liang2026mulberry,
+  title   = {基于改进YOLO11n的桑叶病虫害检测方法研究},
+  author  = {梁凤玲 and 韦日坤},
+  journal = {物联网技术},
+  year    = {2026},
+  volume  = {16},
+  number  = {19},
+  doi     = {10.16667/j.issn.2095-1302.2026.19.008}
+}
+
 @misc{liang2026yolov11n,
   title  = {YOLOv11n-C2PSA-iRMB-ASF: Lightweight Mulberry Pest and Disease Detection with Edge Deployment},
   author = {Liang, Fengling and Wei, Rikun},
