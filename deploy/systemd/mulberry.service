@@ -1,8 +1,6 @@
 # 把 lfl 换成你的树莓派用户名
 [Unit]
 Description=Mulberry pest detection web app
-After=network-online.target
-Wants=network-online.target
 
 [Service]
 Type=simple
